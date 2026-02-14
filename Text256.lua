@@ -26,9 +26,7 @@ print("ANOM ESP: ON")
 -- ======================
 -- SERVICIOS
 -- ======================
-local RunService = game:GetService("RunService")
 local humFolder = workspace:WaitForChild("Hum")
-
 local ESPs = _G.ANOM_ESP_DATA
 
 -- ======================
@@ -94,27 +92,32 @@ local function removeESP(parentModel)
 end
 
 -- ======================
--- LOOP
+-- LOOP 1 VEZ POR SEGUNDO
 -- ======================
-RunService.RenderStepped:Connect(function()
 
-	if not _G.ANOM_ESP then return end
+task.spawn(function()
+	while true do
+		task.wait(1) -- revisa cada 1 segundo
+		
+		if not _G.ANOM_ESP then
+			break
+		end
 
-	local activeModels = {}
+		local activeModels = {}
 
-	for _, obj in pairs(humFolder:GetDescendants()) do
-		if obj:IsA("Model") and obj.Name == "Man1" then
-			if obj.Parent and obj.Parent.Name:match("^Anom") then
-				activeModels[obj.Parent] = obj
-				createESP(obj)
+		for _, obj in pairs(humFolder:GetDescendants()) do
+			if obj:IsA("Model") and obj.Name == "Man1" then
+				if obj.Parent and obj.Parent.Name:match("^Anom") then
+					activeModels[obj.Parent] = obj
+					createESP(obj)
+				end
+			end
+		end
+
+		for model,_ in pairs(ESPs) do
+			if not activeModels[model] then
+				removeESP(model)
 			end
 		end
 	end
-
-	for model,_ in pairs(ESPs) do
-		if not activeModels[model] then
-			removeESP(model)
-		end
-	end
-
 end)
